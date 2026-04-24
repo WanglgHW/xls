@@ -32,6 +32,7 @@ load(
 load(
     "//xls/common:openroad_warnings.bzl",
     "ASAP7_SUPPPRESSED_WARNINGS",
+    "OPENROAD_INCOMPATIBLE_ON_MACOS",
     "SKY130_SUPPPRESSED_WARNINGS",
 )
 
@@ -131,7 +132,6 @@ xls_dslx_test(
 xls_dslx_ir(
     name = "rle_enc_ir",
     dslx_top = "RunLengthEncoder32",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "rle_enc.ir",
     library = "rle_enc_dslx",
 )
@@ -139,7 +139,7 @@ xls_dslx_ir(
 xls_ir_opt_ir(
     name = "rle_enc_opt_ir",
     src = "rle_enc.ir",
-    top = "__rle_enc__RunLengthEncoder_0__2_32_next",
+    top = "__rle_enc__RunLengthEncoder32__RunLengthEncoder_0__2_32_next",
 )
 
 xls_ir_verilog(
@@ -190,6 +190,7 @@ gds_write(
 synthesize_rtl(
     name = "rle_enc_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_27//:asap7-sc7p5t_rev27_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     top_module = "rle_enc",
     deps = [
         ":rle_enc_verilog_lib",
@@ -207,11 +208,13 @@ place_and_route(
     placement_density = "0.95",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":rle_enc_synth_asap7",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
 )
 
 gds_write(
     name = "rle_enc_gds_asap7",
     implemented_rtl = ":rle_enc_place_and_route_asap7",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
 )
 
 xls_benchmark_ir(
@@ -259,7 +262,6 @@ xls_dslx_test(
 xls_dslx_ir(
     name = "rle_dec_ir",
     dslx_top = "RunLengthDecoder32",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "rle_dec.ir",
     library = "rle_dec_dslx",
 )
@@ -267,7 +269,7 @@ xls_dslx_ir(
 xls_ir_opt_ir(
     name = "rle_dec_opt_ir",
     src = "rle_dec.ir",
-    top = "__rle_dec__RunLengthDecoder_0__2_32_next",
+    top = "__rle_dec__RunLengthDecoder32__RunLengthDecoder_0__2_32_next",
 )
 
 xls_ir_verilog(
@@ -319,6 +321,7 @@ gds_write(
 synthesize_rtl(
     name = "rle_dec_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_27//:asap7-sc7p5t_rev27_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     top_module = "rle_dec",
     deps = [
         ":rle_dec_verilog_lib",
@@ -336,11 +339,13 @@ place_and_route(
     placement_density = "0.95",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":rle_dec_synth_asap7",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
 )
 
 gds_write(
     name = "rle_dec_gds_asap7",
     implemented_rtl = ":rle_dec_place_and_route_asap7",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
 )
 
 xls_benchmark_ir(
@@ -354,6 +359,7 @@ xls_benchmark_ir(
 
 build_test(
     name = "rle_build_test",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     # TODO(meheff): Re-enable when flakiness is addressed.
     tags = [
         "manual",

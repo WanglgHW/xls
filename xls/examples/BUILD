@@ -40,6 +40,7 @@ load(
 load(
     "//xls/common:openroad_warnings.bzl",
     "ASAP7_SUPPPRESSED_WARNINGS",
+    "OPENROAD_INCOMPATIBLE_ON_MACOS",
     "SKY130_SUPPPRESSED_WARNINGS",
 )
 load("//xls/examples:list_filegroup_files.bzl", "list_filegroup_files")
@@ -171,7 +172,9 @@ xls_dslx_opt_ir(
     name = "custom_schedule",
     srcs = ["custom_schedule.x"],
     dslx_top = "Accumulator",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
+    ir_conv_args = {
+        "lower_to_proc_scoped_channels": "true",
+    },
 )
 
 xls_dslx_fmt_test(
@@ -197,7 +200,7 @@ xls_dslx_verilog(
         "streaming_channel_data_suffix": "_data",
         "streaming_channel_ready_suffix": "_ready",
         "streaming_channel_valid_suffix": "_valid",
-        "io_constraints": "_data_in:recv:_old_state:send:0:0,_data_in:recv:_data_out:send:4:4,_data_in:recv:_activate:recv:8:8",
+        "io_constraints": "data_in:recv:old_state:send:0:0,data_in:recv:data_out:send:4:4,data_in:recv:activate:recv:8:8",
         "worst_case_throughput": "9",
         "pipeline_stages": "9",
     },
@@ -240,7 +243,6 @@ xls_dslx_opt_ir(
     name = "riscv_simple_opt_ir",
     srcs = ["riscv_simple.x"],
     dslx_top = "run_instruction",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "riscv_simple.ir",
     opt_ir_file = "riscv_simple.opt.ir",
 )
@@ -281,6 +283,7 @@ synthesize_rtl(
     name = "riscv_simple_verilog_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_27//:asap7-sc7p5t_rev27_rvt_4x",
     tags = ["manual"],
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     top_module = "run_instruction",
     deps = [":riscv_simple_verilog"],
 )
@@ -289,6 +292,7 @@ benchmark_synth(
     name = "riscv_simple_benchmark_synth_asap7",
     synth_target = ":riscv_simple_verilog_synth_asap7",
     tags = ["manual"],
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
 )
 
 place_and_route(
@@ -303,6 +307,7 @@ place_and_route(
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":riscv_simple_verilog_synth_asap7",
     tags = ["manual"],
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
 )
 
 xls_ir_verilog(
@@ -421,7 +426,6 @@ xls_dslx_opt_ir(
     name = "sha256",
     srcs = ["sha256.x"],
     dslx_top = "main",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "sha256.ir",
     opt_ir_file = "sha256.opt.ir",
     tags = ["optonly"],
@@ -490,7 +494,6 @@ xls_dslx_opt_ir(
     name = "sobel_filter_ir",
     srcs = ["sobel_filter_benchmark.x"],
     dslx_top = "apply_stencil_float32_8x8",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     deps = [":sobel_filter_dslx"],
 )
 
@@ -588,28 +591,43 @@ xls_dslx_library(
 xls_dslx_ir(
     name = "proc_iota_ir",
     dslx_top = "main",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
+    ir_conv_args = {"lower_to_proc_scoped_channels": "false"},
     ir_file = "proc_iota.ir",
     library = ":proc_iota",
 )
 
-xls_ir_opt_ir(
-    name = "proc_iota_consumer_opt_ir",
-    src = "proc_iota.ir",
-    top = "__proc_iota__consumer_0__2_next",
-)
-
-xls_ir_opt_ir(
-    name = "proc_iota_producer_opt_ir",
-    src = "proc_iota.ir",
-    top = "__proc_iota__producer_0_next",
+xls_dslx_ir(
+    name = "proc_iota_ir_proc_scoped",
+    dslx_top = "main",
+    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
+    ir_file = "proc_iota_proc_scoped.ir",
+    library = ":proc_iota",
 )
 
 [
     (
+        xls_ir_opt_ir(
+            name = "proc_iota_consumer%s_opt_ir" % param[0],
+            src = "proc_iota%s.ir" % param[0],
+            top = "__proc_iota__%sconsumer_0__2_next" % param[1],
+        ),
+        xls_ir_opt_ir(
+            name = "proc_iota_producer%s_opt_ir" % param[0],
+            src = "proc_iota%s.ir" % param[0],
+            top = "__proc_iota__%sproducer_0_next" % param[1],
+        ),
+    )
+    for param in [
+        ("", "main__"),
+        ("_proc_scoped", ""),
+    ]
+]
+
+[
+    (
         xls_ir_verilog(
-            name = "proc_iota_%s_sv" % procmodule,
-            src = "proc_iota_%s_opt_ir" % procmodule,
+            name = "proc_iota_%s%s_sv" % (procmodule, channel_mode),
+            src = "proc_iota_%s%s_opt_ir" % (procmodule, channel_mode),
             codegen_args = {
                 "module_name": "proc_iota_" + procmodule,
                 "generator": "pipeline",
@@ -623,12 +641,16 @@ xls_ir_opt_ir(
                 "streaming_channel_valid_suffix": "_valid",
                 "use_system_verilog": "true",
             },
-            verilog_file = "proc_iota_%s.sv" % procmodule,
+            verilog_file = "proc_iota_%s%s.sv" % (procmodule, channel_mode),
         ),
     )
     for procmodule in [
         "consumer",
         "producer",
+    ]
+    for channel_mode in [
+        "",
+        "_proc_scoped",
     ]
 ]
 
@@ -660,7 +682,6 @@ xls_dslx_opt_ir(
     name = "tiny_adder_opt_ir",
     srcs = ["tiny_adder.x"],
     dslx_top = "tiny_adder",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "tiny_adder.ir",
     opt_ir_file = "tiny_adder.opt.ir",
 )
@@ -696,7 +717,6 @@ xls_dslx_opt_ir(
     name = "find_index_opt_ir",
     srcs = ["find_index.x"],
     dslx_top = "find_index",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "find_index.ir",
     opt_ir_file = "find_index.opt.ir",
 )
@@ -733,6 +753,7 @@ synthesize_rtl(
 synthesize_rtl(
     name = "find_index_5000ps_model_unit_verilog_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_27//:asap7-sc7p5t_rev27_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     top_module = "find_index",
     deps = [
         ":find_index_5000ps_model_unit_verilog",
@@ -763,7 +784,6 @@ xls_dslx_opt_ir(
     name = "large_array",
     srcs = ["large_array.x"],
     dslx_top = "large_array",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "large_array.ir",
     opt_ir_file = "large_array.opt.ir",
 )
@@ -790,7 +810,6 @@ xls_dslx_opt_ir(
     name = "prefix_sum",
     srcs = ["prefix_sum.x"],
     dslx_top = "prefix_sum",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "prefix_sum.ir",
     opt_ir_file = "prefix_sum.opt.ir",
 )
@@ -817,7 +836,6 @@ xls_dslx_opt_ir(
     name = "sparse_prefix_sum",
     srcs = ["sparse_prefix_sum.x"],
     dslx_top = "sparse_prefix_sum",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "sparse_prefix_sum.ir",
     opt_ir_file = "sparse_prefix_sum.opt.ir",
 )
@@ -860,7 +878,6 @@ xls_dslx_ir(
         # It needs to know what configuration to use for the fifo.
         "default_fifo_config": "depth: 0, bypass: true, " +
                                "register_push_outputs: false, register_pop_outputs: false",
-        "lower_to_proc_scoped_channels": "true",
     },
     ir_file = "delay.ir",
     library = ":delay_dslx",
@@ -885,9 +902,9 @@ xls_ir_verilog(
         # See https://google.github.io/xls/codegen_options/#rams-experimental
         # for more information about this option.
         "ram_configurations": "ram:1RW:{req}:{resp}:{wr_comp}".format(
-            req = "_ram_req",
-            resp = "_ram_resp",
-            wr_comp = "_ram_wr_comp",
+            req = "delay__ram_req",
+            resp = "delay__ram_resp",
+            wr_comp = "delay__ram_wr_comp",
         ),
         "pipeline_stages": "2",
         "reset": "rst",
@@ -919,6 +936,7 @@ synthesize_rtl(
     name = "delay_verilog_synth",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_27//:asap7-sc7p5t_rev27_rvt_4x",
     tags = ["manual"],
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     top_module = "delay_top",
     deps = [":delay"],
 )
@@ -927,6 +945,7 @@ benchmark_synth(
     name = "delay_benchmark_synth",
     synth_target = ":delay_verilog_synth",
     tags = ["manual"],
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
 )
 
 xls_dslx_library(
@@ -948,7 +967,6 @@ xls_dslx_test(
 xls_dslx_ir(
     name = "delay_loopback_channel_ir",
     dslx_top = "Delay",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "delay_loopback_channel.ir",
     library = ":delay_loopback_channel_dslx",
 )
@@ -1033,7 +1051,6 @@ xls_dslx_test(
 xls_dslx_ir(
     name = "constraint_ir",
     dslx_top = "main",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "constraint.ir",
     library = ":constraint_dslx",
 )
@@ -1053,7 +1070,7 @@ xls_ir_verilog(
         # Set a constraint between req and resp that they must be 2 cycles apart
         # See https://google.github.io/xls/codegen_options/#pipelining-and-scheduling-options
         # for more information about this option.
-        "io_constraints": "_req:send:_resp:recv:2:2",
+        "io_constraints": "constraint__req:send:constraint__resp:recv:2:2",
         "pipeline_stages": "4",
         "clock_period_ps": "2",
         "reset": "rst",
@@ -1096,15 +1113,18 @@ place_and_route(
     placement_density = "0.95",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":find_index_5000ps_model_unit_verilog_synth_asap7",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
 )
 
 gds_write(
     name = "find_index_gds_asap7",
     implemented_rtl = ":find_index_place_and_route_asap7",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
 )
 
 build_test(
     name = "find_index_gds_asap7_build_test",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     targets = [
         ":find_index_gds_asap7",
     ],
@@ -1129,7 +1149,6 @@ xls_dslx_library(
 xls_dslx_opt_ir(
     name = "fp32_fmac",
     dslx_top = "fp32_fmac",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     library = ":fp32_fmac_dslx",
 )
 
@@ -1156,7 +1175,6 @@ xls_dslx_opt_ir(
     name = "overflow_detect",
     srcs = ["overflow_detect.x"],
     dslx_top = "main",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "overflow_detect.ir",
     opt_ir_file = "overflow_detect.opt.ir",
 )
@@ -1176,7 +1194,6 @@ xls_dslx_opt_ir(
     name = "nested_sel",
     srcs = ["nested_sel.x"],
     dslx_top = "main",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
 )
 
 xls_dslx_opt_ir_test(
@@ -1231,7 +1248,6 @@ xls_dslx_test(
 xls_dslx_ir(
     name = "serialized_decomposer_ir",
     dslx_top = "serialized_decomposer",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
     ir_file = "serialized_decomposer.ir",
     library = ":serialized_decomposer_dslx",
 )
@@ -1290,6 +1306,7 @@ synthesize_rtl(
     name = "serialized_decomposer_verilog_synth",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_27//:asap7-sc7p5t_rev27_rvt_4x",
     tags = ["manual"],
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     top_module = "serialized_decomposer_top",
     deps = [":serialized_decomposer"],
 )
@@ -1298,6 +1315,7 @@ benchmark_synth(
     name = "serialized_decomposer_benchmark_synth",
     synth_target = ":serialized_decomposer_verilog_synth",
     tags = ["manual"],
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
 )
 
 filegroup(
@@ -1365,7 +1383,6 @@ xls_dslx_opt_ir(
     name = "xls_pipeline",
     srcs = ["xls_pipeline.x"],
     dslx_top = "xls_pipeline",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
 )
 
 xls_dslx_library(
@@ -1379,166 +1396,15 @@ xls_dslx_test(
     library = ":proc_network_dslx",
 )
 
+# TODO(allight): Once the ir converter can generate new-style procs we should use this as test data for both ElaborationTest.GraphOldStyle and GraphNewStyle tests.
 xls_dslx_ir(
     name = "proc_network_ir",
     dslx_top = "Initiator",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-        "default_fifo_config": "depth: 2, bypass: true, " +
-                               "register_push_outputs: false, register_pop_outputs: false",
-    },
     ir_file = "proc_network.ir",
-    library = ":proc_network_dslx",
-)
-
-xls_ir_opt_ir(
-    name = "proc_network_opt_ir",
-    src = "proc_network.ir",
-)
-
-xls_benchmark_ir(
-    name = "proc_network_opt_ir_benchmark",
-    src = ":proc_network_opt_ir",
-    codegen_args = {
-        "module_name": "ProcName",
-        "delay_model": "unit",
-        "pipeline_stages": "2",
-        "reset": "rst",
-        "materialize_internal_fifos": "true",
-    },
-    synthesize = True,
-)
-
-xls_dslx_ir(
-    name = "proc_network_proc_scoped_ir",
-    dslx_top = "Initiator",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
-    ir_file = "proc_network_proc_scoped.ir",
     library = ":proc_network_dslx",
 )
 
 build_test(
     name = "xls_pipeline_build_test",
     targets = [":xls_pipeline"],
-)
-
-xls_dslx_library(
-    name = "const_if_dslx",
-    srcs = ["const_if.x"],
-)
-
-xls_dslx_ir(
-    name = "const_if_ir",
-    dslx_top = "Main",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
-    ir_file = "const_if.ir",
-    library = ":const_if_dslx",
-)
-
-xls_dslx_opt_ir(
-    name = "const_if_opt_ir",
-    dslx_top = "Main",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
-    library = ":const_if_dslx",
-)
-
-xls_dslx_test(
-    name = "const_if_dslx_test",
-    srcs = ["const_if.x"],
-    dslx_test_args = {"compare": "jit"},
-)
-
-xls_dslx_verilog(
-    name = "const_if_verilog",
-    codegen_args = {
-        "module_name": "Main",
-        "delay_model": "unit",
-        "pipeline_stages": "1",
-        "reset": "rst",
-    },
-    dslx_top = "Main",
-    library = ":const_if_dslx",
-    verilog_file = "const_if.sv",
-)
-
-xls_dslx_library(
-    name = "const_for_dslx",
-    srcs = ["const_for.x"],
-)
-
-xls_dslx_test(
-    name = "const_for_test",
-    size = "small",
-    srcs = ["const_for.x"],
-    dslx_test_args = {"compare": "jit"},
-)
-
-xls_dslx_ir(
-    name = "const_for_ir",
-    dslx_top = "main",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
-    ir_file = "const_for.ir",
-    library = ":const_for_dslx",
-)
-
-xls_dslx_opt_ir(
-    name = "const_for_opt_ir",
-    srcs = ["const_for.x"],
-    dslx_top = "main",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
-)
-
-xls_dslx_verilog(
-    name = "const_for_verilog",
-    codegen_args = {
-        "module_name": "const_for",
-        "delay_model": "unit",
-        "pipeline_stages": "2",
-        "reset": "rst",
-    },
-    dslx_top = "ConstForInst",
-    library = "const_for_dslx",
-    verilog_file = "const_for.sv",
-)
-
-xls_dslx_library(
-    name = "const_match_dslx",
-    srcs = ["const_match.x"],
-)
-
-xls_dslx_test(
-    name = "const_match_test",
-    size = "small",
-    srcs = ["const_match.x"],
-    dslx_test_args = {"compare": "jit"},
-)
-
-xls_dslx_ir(
-    name = "const_match_ir",
-    dslx_top = "ConstMatchInst",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
-    ir_file = "const_match.ir",
-    library = ":const_match_dslx",
-)
-
-xls_dslx_opt_ir(
-    name = "const_match_opt_ir",
-    srcs = ["const_match.x"],
-    dslx_top = "ConstMatchInst",
-    ir_conv_args = {"lower_to_proc_scoped_channels": "true"},
-)
-
-xls_dslx_verilog(
-    name = "const_match_verilog",
-    codegen_args = {
-        "module_name": "ConstMatchInst",
-        "delay_model": "unit",
-        "pipeline_stages": "1",
-        "reset": "rst",
-    },
-    dslx_top = "ConstMatchInst",
-    library = ":const_match_dslx",
-    verilog_file = "const_match.sv",
 )

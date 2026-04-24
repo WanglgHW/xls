@@ -14,6 +14,15 @@
 
 """Common OpenROAD warnings to suppress for different PDKs."""
 
+# OpenROAD-based flows (synthesis / P&R / GDS) and the open PDK repositories are
+# not supported in our macOS dev setup (and frequently fail due to external
+# repository extraction / toolchain issues). Mark targets that depend on these
+# flows as incompatible on macOS.
+OPENROAD_INCOMPATIBLE_ON_MACOS = select({
+    "@platforms//os:macos": ["@platforms//:incompatible"],
+    "//conditions:default": [],
+})
+
 SKY130_SUPPPRESSED_WARNINGS = [
     "ODB-0227",  # LEF file INFO output; excessively noisy.
     "ORD-0046",  # "-defer_connection has been deprecated."; accurate, but not relevant to the user.

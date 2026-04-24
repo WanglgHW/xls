@@ -2,7 +2,36 @@
 <img src='https://google.github.io/xls/images/xls_logo.svg' alt='XLS Logo'>
 </div>
 
+## the next command is OK
+
+bazel build //:minimal_tools
+
+bazel run -c opt //xls/visualization/ir_viz:app -- --delay_model=unit --port=5001
+
+
+
 # **XLS**: Accelerated HW Synthesis
+
+`//:minimal_tools` is the minimal build entrypoint for this workspace.
+
+It currently includes these tools:
+- interpreter_main
+- ir_converter_main
+- opt_main
+- codegen_main
+- sched_printer_main
+- proc_network_printer_main
+- ir_to_proto_main
+- ir_to_json_main
+- ir_to_csvs_main
+- p4_converter_main
+- yosys_server_main
+- synthesis_client_main
+
+This target is intended to avoid the PDK / OpenROAD flows. Build it with:
+
+ bazel build //:minimal_tools --verbose_failures
+
 
 [**Docs**](https://google.github.io/xls/) | [**Quick Start**](https://google.github.io/xls/tools_quick_start/) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://bit.ly/learn-xls) | [**Tutorials**](https://google.github.io/xls/tutorials/)
 

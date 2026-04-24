@@ -28,7 +28,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
-#include "absl/strings/substitute.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "absl/types/span.h"
@@ -138,8 +137,7 @@ std::string YosysSynthesisServiceImpl::BuildYosysTcl(
       "yosys log -n {DONT_USE_ARGS: }\n"
       "yosys log {*}$::env(DONT_USE_ARGS)";
   const std::string read_verilog_rtl =
-      absl::Substitute("read_verilog $0 $1", use_system_verilog_ ? "-sv" : "",
-                       verilog_path.string());
+      absl::StrFormat("read_verilog %s", verilog_path.string());
   const std::string delete_print_cells = "delete {*/t:$print}";
 
   const std::string perform_generic_synthesis =
@@ -224,9 +222,12 @@ absl::Status YosysSynthesisServiceImpl::RunSynthesis(
 
   if (!synthesis_target_.empty()) {
     // Yosys for Nextpnr backend
+    std::filesystem::path stats_json_path = temp_dir_path / "stats.json";
     std::string yosys_cmd =
-        absl::StrFormat("synth_%s -top %s -json %s", synthesis_target_,
-                        request->top_module_name(), synth_json_path.string());
+      absl::StrFormat(
+        "synth_%s -top %s -json %s; tee -q -o %s stat -json",
+        synthesis_target_, request->top_module_name(),
+        synth_json_path.string(), stats_json_path.string());
     LOG(INFO) << "yosys cmd: " << yosys_cmd;
     XLS_ASSIGN_OR_RETURN(
         string_pair,

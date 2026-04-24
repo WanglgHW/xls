@@ -27,8 +27,6 @@
 # See https://google.github.io/xls/build_system/#whirlwind-intro-to-bazel for
 # more tutorial information.
 
-load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
-load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
 load("@rules_license//rules:license.bzl", "license")
 
 package(
@@ -47,28 +45,76 @@ exports_files([
     "mkdocs.yml",
 ])
 
-genrule(
-    name = "fuzztest_generated_bazelrc",
-    outs = ["fuzztest.generated.bazelrc"],
-    cmd = "$(location @com_google_fuzztest//bazel:setup_configs) \"@com_google_fuzztest\" | sed '$$ { /^$$/d }' > $@",
-    tools = ["@com_google_fuzztest//bazel:setup_configs"],
+# Minimal build entrypoint (no PDK / OpenROAD flows).
+alias(
+    name = "interpreter_main",
+    actual = "//xls/dslx:interpreter_main",
 )
 
-diff_test(
-    name = "fuzztest_config_test",
-    file1 = "fuzztest.bazelrc",
-    file2 = ":fuzztest_generated_bazelrc",
+alias(
+    name = "ir_converter_main",
+    actual = "//xls/dslx/ir_convert:ir_converter_main",
 )
 
-# To generate compilation DB, run:
-#   bazel build -c opt //xls/... -k
-#   bazel run //:refresh_compile_commands
-#
-# The first command ensures all generated c++ files are built. It takes a
-# while and is not strictly necessary but will result in better
-# cross-referencing.
-refresh_compile_commands(
-    name = "refresh_compile_commands",
-    exclude_external_sources = True,
-    targets = {"//xls/...": "-c opt"},
+alias(
+    name = "opt_main",
+    actual = "//xls/tools:opt_main",
+)
+
+alias(
+    name = "codegen_main",
+    actual = "//xls/tools:codegen_main",
+)
+
+alias(
+    name = "sched_printer_main",
+    actual = "//xls/visualization:sched_printer_main",
+)
+
+
+alias(
+    name = "proc_network_printer_main",
+    actual = "//xls/visualization:proc_network_printer_main",
+)
+
+alias(
+    name = "ir_to_proto_main",
+    actual = "//xls/visualization/ir_viz:ir_to_proto_main",
+)
+
+alias(
+    name = "ir_to_json_main",
+    actual = "//xls/visualization/ir_viz:ir_to_json_main",
+)
+
+alias(
+    name = "ir_to_csvs_main",
+    actual = "//xls/visualization/ir_viz:ir_to_csvs_main",
+)
+
+alias(
+    name = "yosys_server_main",
+    actual = "//xls/synthesis/yosys:yosys_server_main",
+)
+
+alias(
+    name = "synthesis_client_main",
+    actual = "//xls/synthesis:synthesis_client_main",
+)
+
+filegroup(
+    name = "minimal_tools",
+    srcs = [
+        ":interpreter_main",
+        "ir_converter_main",
+        ":opt_main",
+        ":codegen_main",
+        ":sched_printer_main",
+        ":proc_network_printer_main",
+        ":ir_to_proto_main",
+        ":ir_to_json_main",
+        ":ir_to_csvs_main",
+        ":yosys_server_main",
+        ":synthesis_client_main",
+    ],
 )

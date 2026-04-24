@@ -26,6 +26,8 @@ load(
     "xls_cc_ir",
 )
 
+load("//xls/common:openroad_warnings.bzl", "OPENROAD_INCOMPATIBLE_ON_MACOS")
+
 package(
     default_applicable_licenses = ["//:license"],
     default_visibility = ["//xls:xls_internal"],
@@ -222,6 +224,7 @@ xls_ir_opt_ir(
         synthesize_rtl(
             name = "mem_iterated_read_{iterations}_synth_asap7".format(iterations = read_iterations),
             standard_cells = "@org_theopenroadproject_asap7sc7p5t_27//:asap7-sc7p5t_rev27_rvt_4x",
+            target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
             tags = ["manual"],
             top_module = "mem_iterated_read",
             deps = [

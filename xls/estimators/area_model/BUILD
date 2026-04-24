@@ -15,7 +15,7 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_hdl//dependency_support/com_google_skywater_pdk:cells_info.bzl", "for_each_sky130_cells")
-load("@rules_hdl//dependency_support/org_theopenroadproject_asap7_pdk_r1p7:cells_info.bzl", "for_each_asap7_cells")
+load("@xls_pip_deps//:requirements.bzl", "requirement")
 load("//xls/build_rules:py_oss_defs.bzl", "pytype_strict_binary", "pytype_strict_contrib_test", "pytype_strict_library")
 load("//xls/build_rules:xls_build_defs.bzl", "xls_model_generation")
 
@@ -33,7 +33,6 @@ cc_library(
     name = "area_estimator",
     srcs = ["area_estimator.cc"],
     hdrs = ["area_estimator.h"],
-    visibility = ["//xls:xls_users"],
     deps = [
         "//xls/common/status:status_macros",
         "//xls/ir",
@@ -69,7 +68,6 @@ cc_library(
     name = "area_estimators",
     srcs = ["area_estimators.cc"],
     hdrs = ["area_estimators.h"],
-    visibility = ["//xls:xls_users"],
     deps = [
         ":area_estimator",
         "//xls/ir",
@@ -120,6 +118,8 @@ pytype_strict_binary(
     srcs = ["generate_area_lookup.py"],
     data = ["generate_area_lookup.tmpl"],
     deps = [
+        requirement("Jinja2"),
+        requirement("MarkupSafe"),
         "//xls/common:runfiles",
         "//xls/estimators:estimator_model",
         "//xls/estimators:estimator_model_py_pb2",
@@ -127,7 +127,6 @@ pytype_strict_binary(
         "@abseil-py//absl:app",
         "@abseil-py//absl/flags",
         "@com_google_protobuf//:protobuf_python",
-        "@xls_pip_deps//jinja2",
     ],
 )
 
@@ -153,40 +152,3 @@ xls_model_generation(
     )
     for cell_name, cell_target in for_each_sky130_cells("sc_hd")
 ]
-
-# ASAP 7nm pseudo open source PDK
-# ========================================================================
-# Default model for ASAP7
-xls_model_generation(
-    name = "data_points-asap7",
-    samples_file = ":samples.textproto",
-    standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
-)
-
-[
-    xls_model_generation(
-        name = "data_points-" + cell_name,
-        samples_file = ":samples.textproto",
-        standard_cells = cell_target,
-        tags = ["manual"],
-    )
-    for cell_name, cell_target in for_each_asap7_cells("sc7p5t_rev27")
-]
-
-[
-    xls_model_generation(
-        name = "data_points-" + cell_name,
-        samples_file = ":samples.textproto",
-        standard_cells = cell_target,
-        tags = ["manual"],
-    )
-    for cell_name, cell_target in for_each_asap7_cells("sc7p5t_rev28")
-]
-
-# Special ASAP7 rev27 standard cells scaled up 4x
-xls_model_generation(
-    name = "data_points-asap7-sc7p5t_rev27_rvt_4x",
-    samples_file = ":samples.textproto",
-    standard_cells = "@org_theopenroadproject_asap7sc7p5t_27//:asap7-sc7p5t_rev27_rvt_4x",
-    tags = ["manual"],
-)

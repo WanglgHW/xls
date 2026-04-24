@@ -14,7 +14,7 @@
 
 """This module contains the rules for defining xls delay models."""
 
-load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load(
@@ -58,36 +58,21 @@ estimator_model_group = rule(
 
 def _xls_default_estimator_models(ctx, reg):
     models = reg.models
-    cc_toolchain = find_cpp_toolchain(ctx)
-    cc_features = cc_common.configure_features(
-        ctx = ctx,
-        cc_toolchain = cc_toolchain,
-        requested_features = ctx.features,
-        unsupported_features = ctx.disabled_features,
-    )
-    linking_ctxs = []
+    cc_infos = []
     all_runfiles = []
     for model in models:
-        linking_ctxs.append(model.cc_info.linking_context)
+        cc_infos.append(model.cc_info)
         all_runfiles.append(model.default_info.default_runfiles)
     rf = ctx.runfiles().merge_all(all_runfiles)
-    comp_out = cc_common.create_compilation_outputs()
-    comp_ctx = cc_common.create_compilation_context()
-    (link, out) = cc_common.create_linking_context_from_compilation_outputs(
-        name = ctx.label.name,
-        actions = ctx.actions,
-        feature_configuration = cc_features,
-        cc_toolchain = cc_toolchain,
-        compilation_outputs = comp_out,
-        linking_contexts = linking_ctxs,
-        # This target links in all the passes.
-        alwayslink = True,
-    )
-    cc_info = CcInfo(compilation_context = comp_ctx, linking_context = link)
+
+    # Do not create a new archive for this target.
+    # On macOS, llvm-libtool fails when asked to create an archive with no
+    # object inputs ("no input files specified"). This target's purpose is to
+    # aggregate the default model libraries; merging their CcInfos is sufficient.
+    cc_info = cc_common.merge_cc_infos(cc_infos = cc_infos)
     default_info = DefaultInfo(
         files = depset(
-            # Ensure just building the registry does force all the passes to build.
-            direct = out.library_to_link.pic_objects,
+            direct = [],
             transitive = [c.default_info.files for c in models],
         ),
         runfiles = rf,
@@ -102,8 +87,7 @@ _xls_default_delay_models_rule = rule(
     implementation = _xls_default_delay_models,
     doc = """A library which includes the default delay models""",
     provides = [XlsEstimatorRegistryInfo, CcInfo],
-    toolchains = use_cpp_toolchain() + ["//xls/common/toolchains:toolchain_type"],
-    fragments = ["cpp"],
+    toolchains = ["//xls/common/toolchains:toolchain_type"],
 )
 
 def xls_default_delay_models(name, tags = None):
@@ -130,8 +114,7 @@ _xls_default_area_models_rule = rule(
     implementation = _xls_default_area_models,
     doc = """A library which includes the default area models""",
     provides = [XlsEstimatorRegistryInfo, CcInfo],
-    toolchains = use_cpp_toolchain() + ["//xls/common/toolchains:toolchain_type"],
-    fragments = ["cpp"],
+    toolchains = ["//xls/common/toolchains:toolchain_type"],
 )
 
 def xls_default_area_models(name, tags = None):

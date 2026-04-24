@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@com_google_protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
-load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
-load("@com_google_protobuf//bazel:py_proto_library.bzl", "py_proto_library")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_hdl//dependency_support/com_google_skywater_pdk:cells_info.bzl", "for_each_sky130_cells")
-load("@rules_hdl//dependency_support/org_theopenroadproject_asap7_pdk_r1p7:cells_info.bzl", "for_each_asap7_cells")
+load("@rules_python//python:proto.bzl", "py_proto_library")
+load("@xls_pip_deps//:requirements.bzl", "requirement")
 load("//xls/build_rules:py_oss_defs.bzl", "pytype_strict_binary")
+
+# Load proto_library
 load("//xls/build_rules:xls_build_defs.bzl", "xls_model_generation")
+# cc_proto_library is used in this file
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -194,9 +195,9 @@ cc_library(
     hdrs = ["delay_estimators.h"],
     deps = [
         ":delay_estimator",
-        "//xls/ir",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings:str_format",
+        "//xls/ir",
     ],
 )
 
@@ -205,13 +206,14 @@ pytype_strict_binary(
     srcs = ["generate_delay_lookup.py"],
     data = ["generate_delay_lookup.tmpl"],
     deps = [
+        requirement("Jinja2"),
+        requirement("MarkupSafe"),
         "//xls/common:runfiles",
         "//xls/estimators:estimator_model",
         "//xls/estimators:estimator_model_py_pb2",
         "@abseil-py//absl:app",
         "@abseil-py//absl/flags",
         "@com_google_protobuf//:protobuf_python",
-        "@xls_pip_deps//jinja2",
     ],
 )
 
@@ -283,43 +285,6 @@ xls_model_generation(
     )
     for cell_name, cell_target in for_each_sky130_cells("sc_hd")
 ]
-
-# ASAP 7nm fake open source PDK
-# ========================================================================
-# Default model for ASAP7
-xls_model_generation(
-    name = "data_points-asap7",
-    samples_file = ":samples.textproto",
-    standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
-)
-
-[
-    xls_model_generation(
-        name = "data_points-" + cell_name,
-        samples_file = ":samples.textproto",
-        standard_cells = cell_target,
-        tags = ["manual"],
-    )
-    for cell_name, cell_target in for_each_asap7_cells("sc7p5t_rev27")
-]
-
-[
-    xls_model_generation(
-        name = "data_points-" + cell_name,
-        samples_file = ":samples.textproto",
-        standard_cells = cell_target,
-        tags = ["manual"],
-    )
-    for cell_name, cell_target in for_each_asap7_cells("sc7p5t_rev28")
-]
-
-# Special ASAP7 rev27 standard cells scaled up 4x
-xls_model_generation(
-    name = "data_points-asap7-sc7p5t_rev27_rvt_4x",
-    samples_file = ":samples.textproto",
-    standard_cells = "@org_theopenroadproject_asap7sc7p5t_27//:asap7-sc7p5t_rev27_rvt_4x",
-    tags = ["manual"],
-)
 
 proto_library(
     name = "delay_info_proto",

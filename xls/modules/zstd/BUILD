@@ -25,7 +25,11 @@ load(
     "xls_dslx_test",
     "xls_dslx_verilog",
 )
-load("//xls/common:openroad_warnings.bzl", "ASAP7_SUPPPRESSED_WARNINGS")
+load(
+    "//xls/common:openroad_warnings.bzl",
+    "ASAP7_SUPPPRESSED_WARNINGS",
+    "OPENROAD_INCOMPATIBLE_ON_MACOS",
+)
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -95,6 +99,7 @@ xls_dslx_verilog(
     codegen_args = WINDOW_BUFFER_CODEGEN_ARGS,
     dslx_top = "WindowBuffer64",
     library = ":window_buffer_dslx",
+    tags = ["manual"],
     verilog_file = "window_buffer.v",
 )
 
@@ -115,6 +120,7 @@ verilog_library(
 synthesize_rtl(
     name = "window_buffer_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "WindowBuffer64",
     deps = [
@@ -159,6 +165,7 @@ xls_dslx_verilog(
     codegen_args = COMMON_CODEGEN_ARGS | {"module_name": "ShiftBufferAligner"},
     dslx_top = "ShiftBufferAlignerInst",
     library = ":shift_buffer_dslx",
+    tags = ["manual"],
     verilog_file = "shift_buffer_aligner.v",
 )
 
@@ -179,6 +186,7 @@ verilog_library(
 synthesize_rtl(
     name = "shift_buffer_aligner_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "ShiftBufferAligner",
     deps = [
@@ -222,6 +230,7 @@ xls_dslx_verilog(
     codegen_args = SHIFT_BUFFER_STORAGE_CODEGEN_ARGS,
     dslx_top = "ShiftBufferStorageInst",
     library = ":shift_buffer_dslx",
+    tags = ["manual"],
     verilog_file = "shift_buffer_storage.v",
 )
 
@@ -229,6 +238,7 @@ xls_benchmark_ir(
     name = "shift_buffer_storage_opt_ir_benchmark",
     src = ":shift_buffer_storage_verilog.opt.ir",
     benchmark_ir_args = SHIFT_BUFFER_STORAGE_CODEGEN_ARGS,
+    tags = ["manual"],
 )
 
 verilog_library(
@@ -242,6 +252,7 @@ verilog_library(
 synthesize_rtl(
     name = "shift_buffer_storage_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "ShiftBufferStorage",
     deps = [
@@ -287,6 +298,7 @@ xls_dslx_verilog(
     codegen_args = SHIFT_BUFFER_CODEGEN_ARGS,
     dslx_top = "ShiftBufferInst",
     library = ":shift_buffer_dslx",
+    tags = ["manual"],
     verilog_file = "shift_buffer.v",
 )
 
@@ -307,6 +319,7 @@ verilog_library(
 synthesize_rtl(
     name = "shift_buffer_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "ShiftBuffer",
     deps = [
@@ -329,15 +342,13 @@ place_and_route(
     stop_after_step = "global_routing",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":shift_buffer_synth_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
     target_die_utilization_percentage = "5",
 )
 
 xls_benchmark_verilog(
     name = "shift_buffer_verilog_benchmark",
+    tags = ["manual"],
     verilog_target = "shift_buffer_verilog",
 )
 
@@ -378,10 +389,8 @@ xls_dslx_verilog(
     name = "frame_header_dec_verilog",
     codegen_args = FRAME_HEADER_DEC_CODEGEN_ARGS,
     dslx_top = "FrameHeaderDecoderInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":frame_header_dec_dslx",
+    tags = ["manual"],
     verilog_file = "frame_header_dec.v",
 )
 
@@ -389,10 +398,10 @@ xls_benchmark_ir(
     name = "frame_header_dec_opt_ir_benchmark",
     src = ":frame_header_dec_verilog.opt.ir",
     benchmark_ir_args = FRAME_HEADER_DEC_CODEGEN_ARGS | {
-        "top": "__frame_header_dec__FrameHeaderDecoder_0__16_32_30_5_next",
+        "top": "__frame_header_dec__FrameHeaderDecoderInst__FrameHeaderDecoder_0__16_32_30_5_next",
         "pipeline_stages": "10",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
+    tags = ["manual"],
 )
 
 verilog_library(
@@ -407,6 +416,7 @@ verilog_library(
 synthesize_rtl(
     name = "frame_header_dec_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "FrameHeaderDecoder",
     deps = [
@@ -475,10 +485,8 @@ xls_dslx_verilog(
     name = "block_header_dec_verilog",
     codegen_args = BLOCK_HEADER_DEC_CODEGEN_ARGS,
     dslx_top = "BlockHeaderDecoderInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":block_header_dec_dslx",
+    tags = ["manual"],
     verilog_file = "block_header_dec.v",
 )
 
@@ -487,9 +495,8 @@ xls_benchmark_ir(
     src = ":block_header_dec_verilog.opt.ir",
     benchmark_ir_args = BLOCK_HEADER_DEC_CODEGEN_ARGS | {
         "pipeline_stages": "10",
-        "top": "__block_header_dec__BlockHeaderDecoder_0__16_64_next",
+        "top": "__block_header_dec__BlockHeaderDecoderInst__BlockHeaderDecoder_0__16_64_next",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 verilog_library(
@@ -504,6 +511,7 @@ verilog_library(
 synthesize_rtl(
     name = "block_header_dec_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "BlockHeaderDec",
     deps = [
@@ -521,8 +529,6 @@ place_and_route(
     name = "block_header_dec_place_and_route",
     clock_period = CLOCK_PERIOD_PS,
     core_padding_microns = 2,
-    die_height_microns = 100,
-    die_width_microns = 100,
     min_pin_distance = "0.5",
     placement_density = "0.30",
     stop_after_step = "global_routing",
@@ -558,10 +564,8 @@ xls_dslx_verilog(
     name = "raw_block_dec_verilog",
     codegen_args = RAW_BLOCK_DEC_CODEGEN_ARGS,
     dslx_top = "RawBlockDecoderInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":raw_block_dec_dslx",
+    tags = ["manual"],
     verilog_file = "raw_block_dec.v",
 )
 
@@ -570,9 +574,8 @@ xls_benchmark_ir(
     src = ":raw_block_dec_verilog.opt.ir",
     benchmark_ir_args = RAW_BLOCK_DEC_CODEGEN_ARGS | {
         "pipeline_stages": "10",
-        "top": "__raw_block_dec__RawBlockDecoder_0__32_32_next",
+        "top": "__raw_block_dec__RawBlockDecoderInst__RawBlockDecoder_0__32_32_next",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 verilog_library(
@@ -587,6 +590,7 @@ verilog_library(
 synthesize_rtl(
     name = "raw_block_dec_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "RawBlockDecoder",
     deps = [
@@ -604,8 +608,6 @@ place_and_route(
     name = "raw_block_dec_place_and_route",
     clock_period = CLOCK_PERIOD_PS,
     core_padding_microns = 2,
-    die_height_microns = 200,
-    die_width_microns = 200,
     min_pin_distance = "0.5",
     placement_density = "0.30",
     stop_after_step = "global_routing",
@@ -640,10 +642,8 @@ xls_dslx_verilog(
     name = "rle_block_dec_verilog",
     codegen_args = RLE_BLOCK_DEC_CODEGEN_ARGS,
     dslx_top = "RleBlockDecoderInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":rle_block_dec_dslx",
+    tags = ["manual"],
     verilog_file = "rle_block_dec.v",
 )
 
@@ -652,9 +652,8 @@ xls_benchmark_ir(
     src = ":rle_block_dec_verilog.opt.ir",
     benchmark_ir_args = RLE_BLOCK_DEC_CODEGEN_ARGS | {
         "pipeline_stages": "10",
-        "top": "__rle_block_dec__RleBlockDecoder_0__64_next",
+        "top": "__rle_block_dec__RleBlockDecoderInst__RleBlockDecoder_0__64_next",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 verilog_library(
@@ -669,6 +668,7 @@ verilog_library(
 synthesize_rtl(
     name = "rle_block_dec_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "RleBlockDecoder",
     deps = [
@@ -722,6 +722,7 @@ xls_dslx_verilog(
     codegen_args = DEC_MUX_CODEGEN_ARGS,
     dslx_top = "DecoderMux",
     library = ":dec_mux_dslx",
+    tags = ["manual"],
     verilog_file = "dec_mux.v",
 )
 
@@ -731,7 +732,7 @@ xls_benchmark_ir(
     benchmark_ir_args = DEC_MUX_CODEGEN_ARGS | {
         "pipeline_stages": "10",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
+    tags = ["manual"],
 )
 
 verilog_library(
@@ -746,6 +747,7 @@ verilog_library(
 synthesize_rtl(
     name = "dec_mux_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "DecoderMux",
     deps = [
@@ -831,10 +833,10 @@ SEQUENCE_EXECUTOR_CODEGEN_ARGS = COMMON_CODEGEN_ARGS | {
         "{ram_name}:1R1W:{rd_req}:{rd_resp}:{wr_req}:{wr_resp}:{latency}".format(
             latency = 1,
             ram_name = "ram{}".format(num),
-            rd_req = "_rd_req_m{}_s".format(num),
-            rd_resp = "_rd_resp_m{}_r".format(num),
-            wr_req = "_wr_req_m{}_s".format(num),
-            wr_resp = "_wr_resp_m{}_r".format(num),
+            rd_req = "sequence_executor__rd_req_m{}_s".format(num),
+            rd_resp = "sequence_executor__rd_resp_m{}_r".format(num),
+            wr_req = "sequence_executor__wr_req_m{}_s".format(num),
+            wr_resp = "sequence_executor__wr_resp_m{}_r".format(num),
         )
         for num in range(7)
     ]),
@@ -864,7 +866,6 @@ xls_benchmark_ir(
         "pipeline_stages": "10",
     },
     tags = ["manual"],
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 xls_benchmark_verilog(
@@ -885,6 +886,7 @@ verilog_library(
 synthesize_rtl(
     name = "sequence_executor_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "sequence_executor",
     deps = [
@@ -909,10 +911,7 @@ place_and_route(
     stop_after_step = "global_routing",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":sequence_executor_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
     target_die_utilization_percentage = "10",
 )
 
@@ -941,10 +940,8 @@ xls_dslx_verilog(
     name = "axi_csr_accessor_verilog",
     codegen_args = AXI_CSR_ACCESSOR_CODEGEN_ARGS,
     dslx_top = "AxiCsrAccessorInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":axi_csr_accessor_dslx",
+    tags = ["manual"],
     verilog_file = "axi_csr_accessor.v",
 )
 
@@ -953,9 +950,8 @@ xls_benchmark_ir(
     src = ":axi_csr_accessor_verilog.opt.ir",
     benchmark_ir_args = AXI_CSR_ACCESSOR_CODEGEN_ARGS | {
         "pipeline_stages": "10",
-        "top": "__axi_csr_accessor__AxiCsrAccessor_0__16_32_4_4_2_4_16_next",
+        "top": "__axi_csr_accessor__AxiCsrAccessorInst__AxiCsrAccessor_0__16_32_4_4_2_4_16_next",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 verilog_library(
@@ -970,6 +966,7 @@ verilog_library(
 synthesize_rtl(
     name = "axi_csr_accessor_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "AxiCsrAccessor",
     deps = [
@@ -987,8 +984,6 @@ place_and_route(
     name = "axi_csr_accessor_place_and_route",
     clock_period = CLOCK_PERIOD_PS,
     core_padding_microns = 2,
-    die_height_microns = 150,
-    die_width_microns = 150,
     min_pin_distance = "0.5",
     placement_density = "0.30",
     stop_after_step = "global_routing",
@@ -1022,10 +1017,8 @@ xls_dslx_verilog(
     name = "csr_config_verilog",
     codegen_args = CSR_CONFIG_CODEGEN_ARGS,
     dslx_top = "CsrConfigInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":csr_config_dslx",
+    tags = ["manual"],
     verilog_file = "csr_config.v",
 )
 
@@ -1034,9 +1027,8 @@ xls_benchmark_ir(
     src = ":csr_config_verilog.opt.ir",
     benchmark_ir_args = CSR_CONFIG_CODEGEN_ARGS | {
         "pipeline_stages": "10",
-        "top": "__csr_config__CsrConfig_0__2_32_4_32_2_4_next",
+        "top": "__csr_config__CsrConfigInst__CsrConfig_0__2_32_4_32_2_4_next",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 verilog_library(
@@ -1051,6 +1043,7 @@ verilog_library(
 synthesize_rtl(
     name = "csr_config_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "CsrConfig",
     deps = [
@@ -1101,13 +1094,11 @@ xls_dslx_verilog(
         "materialize_internal_fifos": "true",
     },
     dslx_top = "RamWrRespHandlerInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":ram_wr_handler_dslx",
     opt_ir_args = {
-        "top": "__ram_wr_handler__RamWrRespHandler_0__32_next",
+        "top": "__ram_wr_handler__RamWrRespHandlerInst__RamWrRespHandler_0__32_next",
     },
+    tags = ["manual"],
     verilog_file = "ram_rw_handler.v",
 )
 
@@ -1118,7 +1109,6 @@ xls_benchmark_ir(
         "pipeline_stages": "10",
         "delay_model": "asap7",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 verilog_library(
@@ -1133,6 +1123,7 @@ verilog_library(
 synthesize_rtl(
     name = "ram_rw_handler_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "RamWrRespHandler",
     deps = [
@@ -1185,10 +1176,10 @@ xls_dslx_verilog(
         # FIXME: update ram rewrite
         #"ram_configurations": "ram:1R1W:{rd_req}:{rd_resp}:{wr_req}:{wr_resp}:{latency}".format(
         #    latency = 5,
-        #    rd_req = "_rd_req_s",
-        #    rd_resp = "_rd_resp_r",
-        #    wr_req = "_wr_req_s",
-        #    wr_resp = "_wr_resp_r",
+        #    rd_req = "fse_proba_freq_dec__rd_req_s",
+        #    rd_resp = "fse_proba_freq_dec__rd_resp_r",
+        #    wr_req = "fse_proba_freq_dec__wr_req_s",
+        #    wr_resp = "fse_proba_freq_dec__wr_resp_r",
         #),
         "pipeline_stages": "6",
         "reset": "rst",
@@ -1197,6 +1188,7 @@ xls_dslx_verilog(
     },
     dslx_top = "FseProbaFreqDecoderInst",
     library = ":fse_proba_freq_dec_dslx",
+    tags = ["manual"],
     verilog_file = "fse_proba_freq_dec.v",
 )
 
@@ -1216,11 +1208,12 @@ xls_benchmark_ir(
         #    wr_resp = "fse_proba_freq_dec__wr_resp_r",
         #),
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
+    tags = ["manual"],
 )
 
 xls_benchmark_verilog(
     name = "fse_proba_freq_dec_verilog_benchmark",
+    tags = ["manual"],
     verilog_target = "fse_proba_freq_dec_verilog",
 )
 
@@ -1236,6 +1229,7 @@ verilog_library(
 synthesize_rtl(
     name = "fse_proba_freq_dec_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "FseProbaFreqDec",
     deps = [
@@ -1282,10 +1276,8 @@ xls_dslx_verilog(
         "module_name": "LiteralsBlockHeaderDecoder",
     },
     dslx_top = "LiteralsHeaderDecoderInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":literals_block_header_dec_dslx",
+    tags = ["manual"],
     verilog_file = "literals_block_header_dec.v",
 )
 
@@ -1293,7 +1285,7 @@ xls_benchmark_ir(
     name = "literals_block_header_dec_opt_ir_benchmark",
     src = ":literals_block_header_dec_verilog.opt.ir",
     benchmark_ir_args = {
-        "top": "__literals_block_header_dec__LiteralsHeaderDecoder_0__16_64_next",
+        "top": "__literals_block_header_dec__LiteralsHeaderDecoderInst__LiteralsHeaderDecoder_0__16_64_next",
         "pipeline_stages": "10",
     },
 )
@@ -1319,10 +1311,8 @@ xls_dslx_verilog(
         "module_name": "SequenceConfDecoder",
     },
     dslx_top = "SequenceConfDecoderInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":sequence_conf_dec_dslx",
+    tags = ["manual"],
     verilog_file = "sequence_conf_dec.v",
 )
 
@@ -1330,7 +1320,7 @@ xls_benchmark_ir(
     name = "sequence_conf_dec_opt_ir_benchmark",
     src = ":sequence_conf_dec_verilog.opt.ir",
     benchmark_ir_args = {
-        "top": "__sequence_conf_dec__SequenceConfDecoder_0__16_64_next",
+        "top": "__sequence_conf_dec__SequenceConfDecoderInst__SequenceConfDecoder_0__16_64_next",
         "pipeline_stages": "10",
     },
 )
@@ -1360,6 +1350,7 @@ xls_dslx_verilog(
     codegen_args = REFILLING_SHIFT_BUFFER_CODEGEN_ARGS,
     dslx_top = "RefillingShiftBufferInternalInst",
     library = ":refilling_shift_buffer_dslx",
+    tags = ["manual"],
     verilog_file = "refilling_shift_buffer_internal.v",
 )
 
@@ -1370,7 +1361,6 @@ xls_benchmark_ir(
         "pipeline_stages": "10",
     },
     codegen_args = REFILLING_SHIFT_BUFFER_CODEGEN_ARGS,
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 verilog_library(
@@ -1385,6 +1375,7 @@ verilog_library(
 synthesize_rtl(
     name = "refilling_shift_buffer_internal_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "RefillingShiftBufferInternalInst",
     deps = [
@@ -1402,8 +1393,6 @@ place_and_route(
     name = "refilling_shift_buffer_internal_place_and_route",
     clock_period = CLOCK_PERIOD_PS,
     core_padding_microns = 2,
-    die_height_microns = 200,
-    die_width_microns = 200,
     min_pin_distance = "0.4",
     placement_density = "0.30",
     stop_after_step = "global_routing",
@@ -1501,6 +1490,7 @@ xls_dslx_verilog(
     codegen_args = ZSTD_DEC_INTERNAL_CODEGEN_ARGS,
     dslx_top = "ZstdDecoderInternalInst",
     library = ":zstd_dec_dslx",
+    tags = ["manual"],
     verilog_file = "zstd_dec_internal.v",
 )
 
@@ -1521,6 +1511,7 @@ verilog_library(
 synthesize_rtl(
     name = "zstd_dec_internal_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "ZstdDecoderInternal",
     deps = [
@@ -1538,8 +1529,6 @@ place_and_route(
     name = "zstd_dec_internal_place_and_route",
     clock_period = CLOCK_PERIOD_PS,
     core_padding_microns = 2,
-    die_height_microns = 325,
-    die_width_microns = 325,
     min_pin_distance = "0.35",
     placement_density = "0.30",
     stop_after_step = "global_routing",
@@ -1634,6 +1623,7 @@ xls_dslx_verilog(
     },
     dslx_top = "FseTableIterator",
     library = ":fse_table_iterator_dslx",
+    tags = ["manual"],
     verilog_file = "fse_table_iterator.v",
 )
 
@@ -1644,7 +1634,6 @@ xls_benchmark_ir(
         "pipeline_stages": "10",
         "delay_model": "asap7",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 verilog_library(
@@ -1658,6 +1647,7 @@ verilog_library(
 synthesize_rtl(
     name = "fse_table_iterator_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "FseTableIterator",
     deps = [
@@ -1675,8 +1665,6 @@ place_and_route(
     name = "fse_table_iterator_place_and_route",
     clock_period = "750",
     core_padding_microns = 2,
-    die_height_microns = 150,
-    die_width_microns = 150,
     min_pin_distance = "0.5",
     placement_density = "0.30",
     stop_after_step = "global_routing",
@@ -1714,6 +1702,7 @@ xls_dslx_verilog(
     },
     dslx_top = "FseTableCreatorInst",
     library = ":fse_table_creator_dslx",
+    tags = ["manual"],
     verilog_file = "fse_table_creator.v",
 )
 
@@ -1724,7 +1713,6 @@ xls_benchmark_ir(
         "pipeline_stages": "10",
         "delay_model": "asap7",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 xls_benchmark_verilog(
@@ -1744,6 +1732,7 @@ verilog_library(
 synthesize_rtl(
     name = "fse_table_creator_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "FseTableCreator",
     deps = [
@@ -1796,6 +1785,7 @@ xls_dslx_verilog(
     },
     dslx_top = "CommandConstructor",
     library = ":command_constructor_dslx",
+    tags = ["manual"],
     verilog_file = "command_constructor.v",
 )
 
@@ -1810,6 +1800,7 @@ xls_benchmark_ir(
 
 xls_benchmark_verilog(
     name = "command_constructor_verilog_benchmark",
+    tags = ["manual"],
     verilog_target = "command_constructor_verilog",
 )
 
@@ -1824,6 +1815,7 @@ verilog_library(
 synthesize_rtl(
     name = "command_constructor_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "CommandConstructor",
     deps = [
@@ -1841,17 +1833,12 @@ place_and_route(
     name = "command_constructor_place_and_route",
     clock_period = "750",
     core_padding_microns = 2,
-    die_height_microns = 150,
-    die_width_microns = 150,
     min_pin_distance = "0.3",
     placement_density = "0.30",
     stop_after_step = "global_routing",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":command_constructor_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
     target_die_utilization_percentage = "10",
 )
 
@@ -1879,10 +1866,10 @@ RAM_DEMUX_CODEGEN_ARGS = {
         "{ram_name}:1R1W:{rd_req}:{rd_resp}:{wr_req}:{wr_resp}:{latency}".format(
             latency = 1,
             ram_name = "ram{}".format(num),
-            rd_req = "_rd_req{}_s".format(num),
-            rd_resp = "_rd_resp{}_r".format(num),
-            wr_req = "_wr_req{}_s".format(num),
-            wr_resp = "_wr_resp{}_r".format(num),
+            rd_req = "ram_demux__rd_req{}_s".format(num),
+            rd_resp = "ram_demux__rd_resp{}_r".format(num),
+            wr_req = "ram_demux__wr_req{}_s".format(num),
+            wr_resp = "ram_demux__wr_resp{}_r".format(num),
         )
         for num in range(2)
     ]),
@@ -1896,10 +1883,8 @@ xls_dslx_verilog(
     name = "ram_demux_verilog",
     codegen_args = RAM_DEMUX_CODEGEN_ARGS,
     dslx_top = "RamDemuxWrappedInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":ram_demux_dslx",
+    tags = ["manual"],
     verilog_file = "ram_demux.v",
 )
 
@@ -1920,6 +1905,7 @@ verilog_library(
 synthesize_rtl(
     name = "ram_demux_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "RamDemux",
     deps = [
@@ -1971,9 +1957,6 @@ xls_dslx_verilog(
     name = "ram_demux_naive_verilog",
     codegen_args = ram_demux_naive_codegen_args,
     dslx_top = "RamDemuxNaiveWrappedInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "false",
-    },
     library = ":ram_demux_dslx",
     tags = ["manual"],
     verilog_file = "ram_demux_naive.v",
@@ -1996,6 +1979,7 @@ verilog_library(
 synthesize_rtl(
     name = "ram_demux_naive_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "RamDemuxNaive",
     deps = [
@@ -2045,10 +2029,10 @@ xls_dslx_verilog(
         "ram_configurations": "{ram_name}:1R1W:{rd_req}:{rd_resp}:{wr_req}:{wr_resp}:{latency}".format(
             latency = 1,
             ram_name = "ram",
-            rd_req = "_rd_req_s",
-            rd_resp = "_rd_resp_r",
-            wr_req = "_wr_req_s",
-            wr_resp = "_wr_resp_r",
+            rd_req = "ram_passthrough__rd_req_s",
+            rd_resp = "ram_passthrough__rd_resp_r",
+            wr_req = "ram_passthrough__wr_req_s",
+            wr_resp = "ram_passthrough__wr_resp_r",
         ),
         "reset": "rst",
         "use_system_verilog": "false",
@@ -2056,10 +2040,8 @@ xls_dslx_verilog(
         "clock_period_ps": "750",
     },
     dslx_top = "RamPassthroughInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":ram_passthrough_dslx",
+    tags = ["manual"],
     verilog_file = "ram_passthrough.v",
 )
 
@@ -2093,13 +2075,11 @@ xls_dslx_verilog(
         "materialize_internal_fifos": "true",
     },
     dslx_top = "FseDecoderInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":fse_dec_dslx",
     opt_ir_args = {
-        "top": "__fse_dec__FseDecoder_0__64_8_32_4_64_7_next",
+        "top": "__fse_dec__FseDecoderInst__FseDecoder_0__64_8_32_4_64_7_next",
     },
+    tags = ["manual"],
     verilog_file = "fse_dec.v",
 )
 
@@ -2110,7 +2090,6 @@ xls_benchmark_ir(
         "delay_model": "asap7",
         "pipeline_stages": "3",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 verilog_library(
@@ -2124,6 +2103,7 @@ verilog_library(
 synthesize_rtl(
     name = "fse_dec_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "FseDecoder",
     deps = [
@@ -2148,10 +2128,7 @@ place_and_route(
     stop_after_step = "global_routing",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":fse_dec_synth_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
     target_die_utilization_percentage = "10",
 )
 
@@ -2177,10 +2154,10 @@ xls_dslx_verilog(
             "{ram_name}:1R1W:{rd_req}:{rd_resp}:{wr_req}:{wr_resp}:{latency}".format(
                 latency = 1,
                 ram_name = "ram{}".format(num),
-                rd_req = "_rd_req{}_s".format(num),
-                rd_resp = "_rd_resp{}_r".format(num),
-                wr_req = "_wr_req{}_s".format(num),
-                wr_resp = "_wr_resp{}_r".format(num),
+                rd_req = "ram_demux3__rd_req{}_s".format(num),
+                rd_resp = "ram_demux3__rd_resp{}_r".format(num),
+                wr_req = "ram_demux3__wr_req{}_s".format(num),
+                wr_resp = "ram_demux3__wr_resp{}_r".format(num),
             )
             for num in range(3)
         ]),
@@ -2191,10 +2168,8 @@ xls_dslx_verilog(
         "materialize_internal_fifos": "true",
     },
     dslx_top = "RamDemux3Inst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":ram_demux3_dslx",
+    tags = ["manual"],
     verilog_file = "ram_demux3.v",
 )
 
@@ -2206,7 +2181,6 @@ xls_benchmark_ir(
         "pipeline_stages": "3",
         "worst_case_throughput": "6",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 verilog_library(
@@ -2220,6 +2194,7 @@ verilog_library(
 synthesize_rtl(
     name = "ram_demux3_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "RamDemux3",
     deps = [
@@ -2281,9 +2256,6 @@ xls_dslx_verilog(
     name = "ram_mux_verilog",
     codegen_args = RAM_MUX_CODEGEN_ARGS,
     dslx_top = "RamMuxWrappedInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "false",
-    },
     library = ":ram_mux_dslx",
     tags = ["manual"],
     verilog_file = "ram_mux.v",
@@ -2306,6 +2278,7 @@ verilog_library(
 synthesize_rtl(
     name = "ram_mux_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "RamMux",
     deps = [
@@ -2330,10 +2303,7 @@ place_and_route(
     stop_after_step = "global_routing",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":ram_mux_synth_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
     target_die_utilization_percentage = "10",
 )
 
@@ -2380,13 +2350,11 @@ xls_dslx_verilog(
         "materialize_internal_fifos": "true",
     },
     dslx_top = "FseLookupCtrlInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":sequence_dec_dslx",
     opt_ir_args = {
-        "top": "__sequence_dec__FseLookupCtrl_0_next",
+        "top": "__sequence_dec__FseLookupCtrlInst__FseLookupCtrl_0_next",
     },
+    tags = ["manual"],
     verilog_file = "fse_lookup_ctrl.v",
 )
 
@@ -2397,7 +2365,6 @@ xls_benchmark_ir(
         "delay_model": "asap7",
         "pipeline_stages": "6",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 xls_dslx_library(
@@ -2428,6 +2395,7 @@ xls_dslx_verilog(
     },
     dslx_top = "RleLiteralsDecoderInst",
     library = ":rle_literals_dec_dslx",
+    tags = ["manual"],
     verilog_file = "rle_literals_dec.v",
 )
 
@@ -2451,6 +2419,7 @@ verilog_library(
 synthesize_rtl(
     name = "rle_literals_dec_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "rle_literals_dec",
     deps = [
@@ -2502,13 +2471,11 @@ xls_dslx_verilog(
         "materialize_internal_fifos": "true",
     },
     dslx_top = "RawLiteralsDecoderInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":raw_literals_dec_dslx",
     opt_ir_args = {
-        "top": "__raw_literals_dec__RawLiteralsDecoder_0__16_64_next",
+        "top": "__raw_literals_dec__RawLiteralsDecoderInst__RawLiteralsDecoder_0__16_64_next",
     },
+    tags = ["manual"],
     verilog_file = "raw_literals_dec.v",
 )
 
@@ -2518,12 +2485,13 @@ xls_benchmark_ir(
     benchmark_ir_args = {
         "pipeline_stages": "10",
         "delay_model": "asap7",
-        "top": "__raw_literals_dec__RawLiteralsDecoder_0__16_64_next",
+        "top": "__raw_literals_dec__RawLiteralsDecoderInst__RawLiteralsDecoder_0__16_64_next",
     },
 )
 
 xls_benchmark_verilog(
     name = "raw_literals_dec_verilog_benchmark",
+    tags = ["manual"],
     verilog_target = "raw_literals_dec_verilog",
 )
 
@@ -2538,6 +2506,7 @@ verilog_library(
 synthesize_rtl(
     name = "raw_literals_dec_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "RawLiteralsDecoder",
     deps = [
@@ -2555,8 +2524,6 @@ place_and_route(
     name = "raw_literals_dec_place_and_route",
     clock_period = "750",
     core_padding_microns = 2,
-    die_height_microns = 175,
-    die_width_microns = 175,
     min_pin_distance = "0.5",
     placement_density = "0.30",
     stop_after_step = "global_routing",
@@ -2593,10 +2560,10 @@ xls_dslx_verilog(
             "{ram_name}:1R1W:{rd_req}:{rd_resp}:{wr_req}:{wr_resp}:{latency}".format(
                 latency = 1,
                 ram_name = "ram{}".format(num),
-                rd_req = "_rd_req_m{}_s".format(num),
-                rd_resp = "_rd_resp_m{}_r".format(num),
-                wr_req = "_wr_req_m{}_s".format(num),
-                wr_resp = "_wr_resp_m{}_r".format(num),
+                rd_req = "literals_buffer__rd_req_m{}_s".format(num),
+                rd_resp = "literals_buffer__rd_resp_m{}_r".format(num),
+                wr_req = "literals_buffer__wr_req_m{}_s".format(num),
+                wr_resp = "literals_buffer__wr_resp_m{}_r".format(num),
             )
             for num in range(7)
         ]),
@@ -2608,10 +2575,8 @@ xls_dslx_verilog(
         "materialize_internal_fifos": "true",
     },
     dslx_top = "LiteralsBufferInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":literals_buffer_dslx",
+    tags = ["manual"],
     verilog_file = "literals_buffer.v",
 )
 
@@ -2622,11 +2587,11 @@ xls_benchmark_ir(
         "pipeline_stages": "6",
         "delay_model": "asap7",
     },
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 xls_benchmark_verilog(
     name = "literals_buffer_verilog_benchmark",
+    tags = ["manual"],
     verilog_target = "literals_buffer_verilog",
 )
 
@@ -2641,6 +2606,7 @@ verilog_library(
 synthesize_rtl(
     name = "literals_buffer_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "LiteralsBuffer",
     deps = [
@@ -2663,10 +2629,7 @@ place_and_route(
     stop_after_step = "global_routing",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":literals_buffer_synth_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
     target_die_utilization_percentage = "10",
 )
 
@@ -2706,6 +2669,7 @@ xls_dslx_verilog(
     codegen_args = LITERALS_DECODER_CTRL_CODEGEN_ARGS,
     dslx_top = "LiteralsDecoderCtrlInst",
     library = ":literals_decoder_dslx",
+    tags = ["manual"],
     verilog_file = "literals_decoder_ctrl.v",
 )
 
@@ -2728,6 +2692,7 @@ verilog_library(
 synthesize_rtl(
     name = "literals_decoder_ctrl_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "LiteralsDecoderCtrl",
     deps = [
@@ -2745,8 +2710,6 @@ place_and_route(
     name = "literals_decoder_ctrl_place_and_route",
     clock_period = "750",
     core_padding_microns = 2,
-    die_height_microns = 200,
-    die_width_microns = 200,
     min_pin_distance = "0.5",
     placement_density = "0.30",
     stop_after_step = "global_routing",
@@ -2763,10 +2726,10 @@ LITERALS_DECODER_CODEGEN_ARGS = {
         "{ram_name}:1R1W:{rd_req}:{rd_resp}:{wr_req}:{wr_resp}:{latency}".format(
             latency = 1,
             ram_name = "ram{}".format(num),
-            rd_req = "_rd_req_m{}_s".format(num),
-            rd_resp = "_rd_resp_m{}_r".format(num),
-            wr_req = "_wr_req_m{}_s".format(num),
-            wr_resp = "_wr_resp_m{}_r".format(num),
+            rd_req = "literals_decoder__rd_req_m{}_s".format(num),
+            rd_resp = "literals_decoder__rd_resp_m{}_r".format(num),
+            wr_req = "literals_decoder__wr_req_m{}_s".format(num),
+            wr_resp = "literals_decoder__wr_resp_m{}_r".format(num),
         )
         for num in range(7)
     ]),
@@ -2781,9 +2744,6 @@ xls_dslx_verilog(
     name = "literals_decoder_verilog",
     codegen_args = LITERALS_DECODER_CODEGEN_ARGS,
     dslx_top = "LiteralsDecoderInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":literals_decoder_dslx",
     tags = ["manual"],
     verilog_file = "literals_decoder.v",
@@ -2796,7 +2756,6 @@ xls_benchmark_ir(
         "pipeline_stages": "10",
     },
     codegen_args = LITERALS_DECODER_CODEGEN_ARGS,
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 xls_benchmark_verilog(
@@ -2816,6 +2775,7 @@ verilog_library(
 synthesize_rtl(
     name = "literals_decoder_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "LiteralsDecoder",
     deps = [
@@ -2827,14 +2787,12 @@ synthesize_rtl(
 benchmark_synth(
     name = "literals_decoder_benchmark_synth",
     synth_target = ":literals_decoder_synth_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
 )
 
+# TODO: Remove _skip suffix after fixing long P&R time. Used now to skip this target in CI.
 place_and_route(
-    name = "literals_decoder_place_and_route",
+    name = "literals_decoder_place_and_route_skip",
     clock_period = "750",
     core_padding_microns = 2,
     min_pin_distance = "0.5",
@@ -2842,10 +2800,7 @@ place_and_route(
     stop_after_step = "global_routing",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":literals_decoder_synth_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
     target_die_utilization_percentage = "10",
 )
 
@@ -2880,12 +2835,12 @@ PRESCAN_CODEGEN_ARGS = COMMON_CODEGEN_ARGS | {
     "pipeline_stages": "16",
     "clock_period_ps": "750",
     "worst_case_throughput": "1",
-    "ram_configurations": "InternalRam:1R1W:_internal_read_req_s" +
-                          ":_internal_read_rsp_r:" +
-                          "_internal_write_req_s:" +
-                          "_internal_write_rsp_r:1",
-    "io_constraints": "_read_req_s:send:" +
-                      "_read_rsp_r:recv:1:1",
+    "ram_configurations": "InternalRam:1R1W:huffman_prescan__internal_read_req_s" +
+                          ":huffman_prescan__internal_read_rsp_r:" +
+                          "huffman_prescan__internal_write_req_s:" +
+                          "huffman_prescan__internal_write_rsp_r:1",
+    "io_constraints": "huffman_prescan__read_req_s:send:" +
+                      "huffman_prescan__read_rsp_r:recv:1:1",
     "materialize_internal_fifos": "false",  # TODO: remove once this option works with loopback channels
 }
 
@@ -2893,10 +2848,8 @@ xls_dslx_verilog(
     name = "huffman_prescan_verilog",
     codegen_args = PRESCAN_CODEGEN_ARGS,
     dslx_top = "WeightPreScan",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":huffman_prescan_dslx",
+    tags = ["manual"],
     verilog_file = "huffman_prescan.v",
 )
 
@@ -2904,11 +2857,11 @@ xls_benchmark_ir(
     name = "huffman_prescan_opt_ir_benchmark",
     src = ":huffman_prescan_verilog.opt.ir",
     benchmark_ir_args = PRESCAN_CODEGEN_ARGS,
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
 )
 
 xls_benchmark_verilog(
     name = "huffman_prescan_verilog_benchmark",
+    tags = ["manual"],
     verilog_target = "huffman_prescan_verilog",
 )
 
@@ -2923,6 +2876,7 @@ verilog_library(
 synthesize_rtl(
     name = "huffman_prescan_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "HuffmanPrescan",
     deps = [
@@ -2979,6 +2933,7 @@ xls_dslx_verilog(
     codegen_args = HUFFMAN_CODE_BUILDER_CODEGEN_ARGS,
     dslx_top = "WeightCodeBuilder",
     library = ":huffman_code_builder_dslx",
+    tags = ["manual"],
     verilog_file = "huffman_code_builder.v",
 )
 
@@ -2990,6 +2945,7 @@ xls_benchmark_ir(
 
 xls_benchmark_verilog(
     name = "huffman_code_builder_verilog_benchmark",
+    tags = ["manual"],
     verilog_target = "huffman_code_builder_verilog",
 )
 
@@ -3004,6 +2960,7 @@ verilog_library(
 synthesize_rtl(
     name = "huffman_code_builder_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "HuffmanCodeBuilder",
     deps = [
@@ -3025,10 +2982,7 @@ place_and_route(
     placement_density = "0.30",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":huffman_code_builder_synth_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
     target_die_utilization_percentage = "10",
 )
 
@@ -3059,6 +3013,7 @@ xls_dslx_verilog(
     codegen_args = HUFFMAN_AXI_READER_CODEGEN_ARGS,
     dslx_top = "HuffmanAxiReaderInst",
     library = ":huffman_axi_reader_dslx",
+    tags = ["manual"],
     verilog_file = "huffman_axi_reader.v",
 )
 
@@ -3079,6 +3034,7 @@ verilog_library(
 synthesize_rtl(
     name = "huffman_axi_reader_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "HuffmanAxiReader",
     deps = [
@@ -3135,6 +3091,7 @@ xls_dslx_verilog(
     codegen_args = HUFFMAN_DATA_PREPROCESSOR_CODEGEN_ARGS,
     dslx_top = "HuffmanDataPreprocessor",
     library = ":huffman_data_preprocessor_dslx",
+    tags = ["manual"],
     verilog_file = "huffman_data_preprocessor.v",
 )
 
@@ -3155,6 +3112,7 @@ verilog_library(
 synthesize_rtl(
     name = "huffman_data_preprocessor_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "HuffmanDataPreprocessor",
     deps = [
@@ -3168,21 +3126,17 @@ benchmark_synth(
     tags = ["manual"],
 )
 
+# TODO: Remove _skip suffix after fixing long P&R time. Used now to skip this target in CI.
 place_and_route(
-    name = "huffman_data_preprocessor_place_and_route",
+    name = "huffman_data_preprocessor_place_and_route_skip",
     clock_period = "750",
     core_padding_microns = 2,
-    die_height_microns = 150,
-    die_width_microns = 150,
     min_pin_distance = "0.5",
     placement_density = "0.30",
     stop_after_step = "global_routing",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":huffman_data_preprocessor_synth_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
     target_die_utilization_percentage = "10",
 )
 
@@ -3215,6 +3169,7 @@ xls_dslx_verilog(
     codegen_args = HUFFMAN_DECODER_CODEGEN_ARGS,
     dslx_top = "HuffmanDecoder",
     library = ":huffman_decoder_dslx",
+    tags = ["manual"],
     verilog_file = "huffman_decoder.v",
 )
 
@@ -3222,6 +3177,9 @@ xls_benchmark_ir(
     name = "huffman_decoder_opt_ir_benchmark",
     src = ":huffman_decoder_verilog.opt.ir",
     benchmark_ir_args = HUFFMAN_DECODER_CODEGEN_ARGS,
+    # Must remain manual since it's broken:
+    # Pipeline scheduling requires either --pipeline_stages or --clock_period_ps to be specified
+    tags = ["manual"],
 )
 
 verilog_library(
@@ -3235,6 +3193,7 @@ verilog_library(
 synthesize_rtl(
     name = "huffman_decoder_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "HuffmanDecoder",
     deps = [
@@ -3248,8 +3207,9 @@ benchmark_synth(
     tags = ["manual"],
 )
 
+# TODO: Remove _skip suffix after fixing long P&R time. Used now to skip this target in CI.
 place_and_route(
-    name = "huffman_decoder_place_and_route",
+    name = "huffman_decoder_place_and_route_skip",
     clock_period = "750",
     core_padding_microns = 2,
     min_pin_distance = "0.5",
@@ -3257,10 +3217,7 @@ place_and_route(
     stop_after_step = "global_routing",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":huffman_decoder_synth_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
     target_die_utilization_percentage = "10",
 )
 
@@ -3298,6 +3255,7 @@ xls_dslx_verilog(
     codegen_args = HUFFMAN_CTRL_CODEGEN_ARGS,
     dslx_top = "HuffmanControlAndSequenceInst",
     library = ":huffman_ctrl_dslx",
+    tags = ["manual"],
     verilog_file = "huffman_ctrl.v",
 )
 
@@ -3318,6 +3276,7 @@ verilog_library(
 synthesize_rtl(
     name = "huffman_ctrl_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "HuffmanCtrl",
     deps = [
@@ -3384,13 +3343,11 @@ xls_dslx_verilog(
     name = "huffman_weights_dec_verilog",
     codegen_args = HUFFMAN_WEIGHTS_DEC_CODEGEN_ARGS,
     dslx_top = "HuffmanWeightsDecoderInst",
-    ir_conv_args = {
-        "lower_to_proc_scoped_channels": "true",
-    },
     library = ":huffman_weights_dec_dslx",
     opt_ir_args = {
-        "top": "__huffman_weights_dec__HuffmanWeightsDecoder_0__32_64_8_8_16_1_8_32_4_9_8_1_8_16_1_6_32_8_next",
+        "top": "__huffman_weights_dec__HuffmanWeightsDecoderInst__HuffmanWeightsDecoder_0__32_64_8_8_16_1_8_32_4_9_8_1_8_16_1_6_32_8_next",
     },
+    tags = ["manual"],
     verilog_file = "huffman_weights_dec.v",
 )
 
@@ -3411,6 +3368,7 @@ verilog_library(
 synthesize_rtl(
     name = "huffman_weights_dec_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "HuffmanWeightsDecoder",
     deps = [
@@ -3433,10 +3391,7 @@ place_and_route(
     stop_after_step = "global_routing",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":huffman_weights_dec_synth_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
     target_die_utilization_percentage = "10",
 )
 
@@ -3461,6 +3416,7 @@ xls_dslx_library(
 xls_dslx_test(
     name = "huffman_literals_dec_dslx_test",
     library = ":huffman_literals_dec_dslx",
+    tags = ["manual"],
 )
 
 HUFFMAN_LITERALS_DEC_CODEGEN_ARGS = COMMON_CODEGEN_ARGS | {
@@ -3477,6 +3433,7 @@ xls_dslx_verilog(
     codegen_args = HUFFMAN_LITERALS_DEC_CODEGEN_ARGS,
     dslx_top = "HuffmanLiteralsDecoderInst",
     library = ":huffman_literals_dec_dslx",
+    tags = ["manual"],
     verilog_file = "huffman_literals_dec.v",
 )
 
@@ -3484,7 +3441,9 @@ xls_benchmark_ir(
     name = "huffman_literals_dec_opt_ir_benchmark",
     src = ":huffman_literals_dec_verilog.opt.ir",
     benchmark_ir_args = HUFFMAN_LITERALS_DEC_CODEGEN_ARGS,
-    verilog_deps = ["//xls/modules/zstd/rtl:xls_fifo_wrapper_verilog_lib"],
+    # Must remain manual since it's broken:
+    # Pipeline scheduling requires either --pipeline_stages or --clock_period_ps to be specified
+    tags = ["manual"],
 )
 
 verilog_library(
@@ -3498,6 +3457,7 @@ verilog_library(
 synthesize_rtl(
     name = "huffman_literals_dec_synth_asap7",
     standard_cells = "@org_theopenroadproject_asap7sc7p5t_28//:asap7-sc7p5t_rev28_rvt",
+    target_compatible_with = OPENROAD_INCOMPATIBLE_ON_MACOS,
     tags = ["manual"],
     top_module = "HuffmanLiteralsDecoder",
     deps = [
@@ -3509,14 +3469,12 @@ synthesize_rtl(
 benchmark_synth(
     name = "huffman_literals_dec_benchmark_synth",
     synth_target = ":huffman_literals_dec_synth_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
 )
 
+# TODO: Remove _skip suffix after fixing long P&R time. Used now to skip this target in CI.
 place_and_route(
-    name = "huffman_literals_dec_place_and_route",
+    name = "huffman_literals_dec_place_and_route_skip",
     clock_period = CLOCK_PERIOD_PS,
     core_padding_microns = 2,
     min_pin_distance = "0.5",
@@ -3524,10 +3482,7 @@ place_and_route(
     stop_after_step = "global_routing",
     suppress_warnings = ASAP7_SUPPPRESSED_WARNINGS,
     synthesized_rtl = ":huffman_literals_dec_synth_asap7",
-    tags = [
-        "long",
-        "manual",
-    ],
+    tags = ["manual"],
     target_die_utilization_percentage = "10",
 )
 

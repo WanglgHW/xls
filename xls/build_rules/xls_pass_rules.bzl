@@ -27,7 +27,6 @@ load(
 load(
     "//xls/build_rules:xls_providers.bzl",
     "XlsOptimizationPassInfo",
-    "XlsOptimizationPassRegistryConfigInfo",
     "XlsOptimizationPassRegistryInfo",
 )
 load(
@@ -322,9 +321,24 @@ def _xls_pass_registry_impl(ctx):
         )
         linking_ctxs.append(link_ctx)
 
-    # For now we don't compile anything.
-    comp_out = cc_common.create_compilation_outputs()
-    comp_ctx = cc_common.create_compilation_context()
+    # On macOS, creating a static archive with no input objects causes
+    # llvm-libtool to fail with: "error: no input files specified".
+    # Ensure the registry always has at least one object file.
+    dummy_cc = ctx.actions.declare_file("%s_registry_dummy.cc" % ctx.attr.name)
+    ctx.actions.write(
+        output = dummy_cc,
+        content = "// Generated file. Do not edit.\n" +
+                  "namespace xls {\n" +
+                  "void __xls_pass_registry_dummy_%s() {}\n" % ctx.attr.name +
+                  "}\n",
+    )
+    (comp_ctx, comp_out) = cc_common.compile(
+        name = ctx.label.name + "_registry_dummy",
+        actions = ctx.actions,
+        feature_configuration = cc_features,
+        cc_toolchain = cc_toolchain,
+        srcs = [dummy_cc],
+    )
     (link, out) = cc_common.create_linking_context_from_compilation_outputs(
         name = ctx.label.name,
         actions = ctx.actions,
@@ -355,10 +369,6 @@ def _xls_pass_registry_impl(ctx):
             default_info = default_info,
             pipeline_src = ctx.file.pipeline,
         ),
-        XlsOptimizationPassRegistryConfigInfo(
-            pipeline_binpb = pipeline_binpb,
-            pass_infos = pass_infos,
-        ),
     ]
 
 xls_pass_registry = rule(
@@ -370,7 +380,7 @@ xls_pass_registry = rule(
     TODO(allight): This would be a nice thing to do. Ensuring that overrides
     work reasonably would be required however.
     """,
-    provides = [CcInfo, XlsOptimizationPassRegistryInfo, XlsOptimizationPassRegistryConfigInfo],
+    provides = [CcInfo, XlsOptimizationPassRegistryInfo],
     fragments = ["cpp"],
     toolchains = use_cpp_toolchain(),
     attrs = dicts.add(
@@ -416,15 +426,11 @@ def _xls_default_pass_registry(ctx):
         config.pass_registry,
         config.pass_registry.cc_library,
         config.pass_registry.default_info,
-        XlsOptimizationPassRegistryConfigInfo(
-            pipeline_binpb = config.pass_registry.pipeline_binpb,
-            pass_infos = config.pass_registry.pass_infos,
-        ),
     ]
 
 xls_default_pass_registry = rule(
     implementation = _xls_default_pass_registry,
     doc = """A pass registry with the default pipeline.""",
-    provides = [XlsOptimizationPassRegistryInfo, XlsOptimizationPassRegistryConfigInfo, CcInfo],
+    provides = [XlsOptimizationPassRegistryInfo, CcInfo],
     toolchains = ["//xls/common/toolchains:toolchain_type"],
 )
