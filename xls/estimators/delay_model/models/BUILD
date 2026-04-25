@@ -38,6 +38,7 @@ estimator_model_group(
     name = "oss_models",
     models = [
         ":model_asap7",
+        ":model_icsprout55",
         ":model_sky130",
         ":model_unit",
     ],
@@ -54,6 +55,13 @@ delay_model(
     name = "model_asap7",
     srcs = ["asap7.textproto"],
     model_name = "asap7",
+    precedence = "kMedium",
+)
+
+delay_model(
+    name = "model_icsprout55",
+    srcs = ["icsprout55.textproto"],
+    model_name = "icsprout55",
     precedence = "kMedium",
 )
 

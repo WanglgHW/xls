@@ -38,6 +38,7 @@ estimator_model_group(
     name = "oss_models",
     models = [
         ":area_model_asap7",
+        ":area_model_icsprout55",
         ":area_model_sky130",
         ":area_model_unit",
         ":area_model_unit_with_default_recursive_op_handling",
@@ -48,6 +49,12 @@ area_model(
     name = "area_model_asap7",
     srcs = ["asap7.textproto"],
     model_name = "asap7",
+)
+
+area_model(
+    name = "area_model_icsprout55",
+    srcs = ["icsprout55.textproto"],
+    model_name = "icsprout55",
 )
 
 area_model(
