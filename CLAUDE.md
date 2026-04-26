@@ -44,18 +44,52 @@ This is a fork of **google/xls**, a High Level Synthesis (HLS) toolchain that pr
 | `ir_to_proto_main` | IR → Protocol Buffers |
 | `ir_to_json_main` | IR → JSON |
 | `ir_to_csvs_main` | IR → CSVs |
-| `p4_converter_main` | P4-related conversion |
 | `yosys_server_main` | Yosys synthesis server |
 | `synthesis_client_main` | Synthesis client (gRPC) |
+| `lec_main` | Logical Equivalence Checking (IR vs gate-level netlist) |
 
 ## Standard Pipeline
 
 ```
 DSLX → interpreter_main (verify)
-     → ir_converter_main (→ .ir)
+     → ir_converter_main --top=FUNC (→ .ir)
      → opt_main (→ _opt.ir)
      → codegen_main --generator=combinational (→ .v)
+     → yosys -s synth.ys (icsprout55 PDK → _netlist.v)
+     → lec_main (IR vs netlist equivalence check)
 ```
+
+## LEC (Logical Equivalence Checking)
+
+`lec_main` compares XLS IR against a gate-level netlist using Z3 SMT solver.
+Test file: `xls/solvers/icsprout55_lec_test.cc` (icsprout55 PDK cells).
+
+```bash
+# Run LEC tests
+bazel test //xls/solvers:icsprout55_lec_test //xls/solvers:z3_lec_test
+
+# Run LEC manually
+bazel-bin/xls/tools/lec_main \
+    --ir_path=design.ir \
+    --netlist_path=design_netlist.v \
+    --cell_proto_path=cells.pb \
+    --entry_function_name=__pkg__func \
+    --netlist_module_name=__pkg__func
+```
+
+LEC requires a binary cell library proto (not Liberty files directly). Generate with:
+```bash
+mkdir -p /tmp/xls_proto && protoc --python_out=/tmp/xls_proto xls/netlist/netlist.proto
+python3  # use xls.netlist.netlist_pb2 to write CellLibraryProto to .pb
+```
+
+## PDK Flow (icsprout55)
+
+The default PDK is icsprout55 (ics55_LLSC_H7C). Yosys synthesis order must be:
+`synth → dfflibmap → abc → clean → write_verilog -noattr`.
+
+Automation script: `test/icsprout55_lec/icsprout55_full_flow.py`
+Manual guide: `test/icsprout55_lec/manual_flow_guide.md`
 
 ## Build Commands
 

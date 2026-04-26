@@ -313,6 +313,26 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "icsprout55_lec_test",
+    srcs = ["icsprout55_lec_test.cc"],
+    deps = [
+        ":z3_lec",
+        "//xls/common:xls_gunit_main",
+        "//xls/common/status:matchers",
+        "//xls/common/status:status_macros",
+        "//xls/ir",
+        "//xls/ir:ir_parser",
+        "//xls/netlist",
+        "//xls/netlist:cell_library",
+        "//xls/netlist:netlist_parser",
+        "//xls/scheduling:pipeline_schedule",
+        "//xls/scheduling:scheduling_options",
+        "@com_google_absl//absl/status:statusor",
+        "@googletest//:gtest",
+    ],
+)
+
 cc_library(
     name = "z3_netlist_translator",
     srcs = ["z3_netlist_translator.cc"],

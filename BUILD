@@ -102,6 +102,11 @@ alias(
     actual = "//xls/synthesis:synthesis_client_main",
 )
 
+alias(
+    name = "lec_main",
+    actual = "//xls/tools:lec_main",
+)
+
 filegroup(
     name = "minimal_tools",
     srcs = [
@@ -116,5 +121,6 @@ filegroup(
         ":ir_to_csvs_main",
         ":yosys_server_main",
         ":synthesis_client_main",
+        ":lec_main",
     ],
 )
